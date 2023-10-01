@@ -31,6 +31,7 @@ library(geosphere)
 library(sf)
 library(openxlsx)
 library(geodata)
+library(geojsonio)
 
 #-------- init
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # set working directory 
@@ -332,7 +333,7 @@ write.csv(df,file=paste0("../ExtractedData_",date,".csv"))
 save.image(file=paste0("../ExtractedData_",date,".RData"))
 
 #-------- open temp data
-#load(file=paste0("ExtractedData_",date,".RData"))
+load(file=paste0("../ExtractedData_","2023_05_09",".RData"))
 
 #-------- set forest cover at founding year
 df$ForestCovFoundYr = NA
@@ -360,6 +361,7 @@ m.out1 = matchit(FieldStation ~ ForestCovFoundYr +
                    population_density + 
                    GlobalHumanModification + 
                    AnnTemp + 
+                   withinPA + 
                    annPrec,
             data = df, 
             method = "nearest", 

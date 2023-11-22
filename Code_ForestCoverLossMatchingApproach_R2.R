@@ -293,7 +293,7 @@ df$RoadDensity[is.nan(df$RoadDensity)] = 0
 df$roaddensity = NULL
 df$ID = as.numeric(df$ID)
 df = df[complete.cases(df),]
-df$PrecForestCoverLoss =  (df$loss_from_closestYear / df$totalarea)*100
+df$PrecForestCoverLoss =  (df$losstotal / df$totalarea)*100
 df$FieldStation = ifelse(df$pt_type=="Fieldstation",1,0)
 df$population_density = df$popDens_2020
 df$GlobalHumanModification = df$X2016_gHM
@@ -346,7 +346,7 @@ fs.data1$FieldAbsEffect_weighted = NA
 for(i in 1:nrow(fs.data1)){
   cdatasub = c.data1[fs.data1$ID[i]==c.data1$ID,]
   fs.data1$FieldAbsEffect[i] = fs.data1$PrecForestCoverLoss[i] - mean(cdatasub$PrecForestCoverLoss)
-  fs.data1$FieldAbsEffect_weighted[i] = fs.data1$PrecForestCoverLoss[i] - weighted.mean(cdatasub$PrecForestCoverLoss,w=1/cdatasub$distance)
+  fs.data1$FieldAbsEffect_weighted[i] = fs.data1$PrecForestCoverLoss[i] - weighted.mean(cdatasub$PrecForestCoverLoss,w=(1/cdatasub$distance))
 }
 
 #-------- pair-wise diff between control points and treatment point
@@ -355,6 +355,11 @@ for(i in 1:nrow(fs.data1)){
   cdatasub = c.data1[fs.data1$ID[i]==c.data1$ID,]
   fs.data1[i,paste0("FieldAbsEffect_c",1:5)] = fs.data1$PrecForestCoverLoss[i] - cdatasub$PrecForestCoverLoss
 }
+mean(c(mean(fs.data1$FieldAbsEffect_c1),
+mean(fs.data1$FieldAbsEffect_c2),
+mean(fs.data1$FieldAbsEffect_c3),
+mean(fs.data1$FieldAbsEffect_c4),
+mean(fs.data1$FieldAbsEffect_c5)))
 
 #-------- prepare for histogram plots, average comparison
 min = -15
@@ -408,28 +413,28 @@ hist(c(fs.data1_pair$CoverlossPlot),breaks=c(-15,-9,-3,3,9,15),
      main = "All", xlab="Forest cover change %",ylab="count")
 
 #-------- create density plots
-all = ggplot(fs.data1, aes(x=FieldAbsEffect)) + 
+all = ggplot(fs.data1, aes(x=CoverlossPlot)) + 
   geom_density(aes(y = ..count..),color="black", fill=rgb(0.1,0.1,0.9,0.5)) + 
   theme_classic() + 
   geom_vline(aes(xintercept=0), color="black",linetype="dotted",linewidth=1) +
   xlab("Relative forest cover loss (%)") + 
   scale_x_continuous(expand = c(0, 0), limits=c(-20,20)) + scale_y_continuous(expand = c(0, 0)) +
   ggtitle("All")
-am = ggplot(fs.data1[fs.data1$Region=="Americas",], aes(x=FieldAbsEffect)) + 
+am = ggplot(fs.data1[fs.data1$Region=="Americas",], aes(x=CoverlossPlot)) + 
   geom_density(aes(y = ..count..),color="black", fill=rgb(0.1,0.1,0.9,0.5)) + 
   theme_classic() + 
   geom_vline(aes(xintercept=0), color="black",linetype="dotted",linewidth=1) +
   xlab("Relative forest cover loss (%)") + 
   scale_x_continuous(expand = c(0, 0),limits=c(-20,20)) + scale_y_continuous(expand = c(0, 0))+
   ggtitle("Americas")
-af = ggplot(fs.data1[fs.data1$Region=="Africa",], aes(x=FieldAbsEffect)) + 
+af = ggplot(fs.data1[fs.data1$Region=="Africa",], aes(x=CoverlossPlot)) + 
   geom_density(aes(y = ..count..),color="black", fill=rgb(0.1,0.1,0.9,0.5)) + 
   theme_classic() + 
   geom_vline(aes(xintercept=0), color="black",linetype="dotted",linewidth=1) +
   xlab("Relative forest cover loss (%)") + 
   scale_x_continuous(expand = c(0, 0),limits=c(-20,20)) + scale_y_continuous(expand = c(0, 0))+
   ggtitle("Africa")
-as = ggplot(fs.data1[fs.data1$Region=="Asia",], aes(x=FieldAbsEffect)) + 
+as = ggplot(fs.data1[fs.data1$Region=="Asia",], aes(x=CoverlossPlot)) + 
   geom_density(aes(y = ..count..),color="black", fill=rgb(0.1,0.1,0.9,0.5)) + 
   theme_classic() + 
   geom_vline(aes(xintercept=0), color="black",linetype="dotted",linewidth=1) +
@@ -480,30 +485,30 @@ mode = function(x) {
   ux[which.max(tabulate(match(x, ux)))]
 }
 df_stats = data.frame(subset=c("Asia","Africa","Americas","All"),mean=rep(NA,4))
-df_stats$mean[1] = mean(fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"])
-df_stats$mean[2] = mean(fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"])
-df_stats$mean[3] = mean(fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"])
-df_stats$mean[4] = mean(fs.data1$FieldAbsEffect)
-df_stats$median[1] = median(fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"])
-df_stats$median[2] = median(fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"])
-df_stats$median[3] = median(fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"])
-df_stats$median[4] = median(fs.data1$FieldAbsEffect)
-df_stats$mode[1] = mode(fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"])
-df_stats$mode[2] = mode(fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"])
-df_stats$mode[3] = mode(fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"])
-df_stats$mode[4] = mode(fs.data1$FieldAbsEffect)
-df_stats$se[1] = se(fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"])
-df_stats$se[2] = se(fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"])
-df_stats$se[3] = se(fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"])
-df_stats$se[4] = se(fs.data1$FieldAbsEffect)
-df_stats$sd[1] = sd(fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"])
-df_stats$sd[2] = sd(fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"])
-df_stats$sd[3] = sd(fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"])
-df_stats$sd[4] = sd(fs.data1$FieldAbsEffect)
-t1 = t.test(fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"],mu=0)
-t2 = t.test(fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"],mu=0)
-t3 = t.test(fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"],mu=0)
-t4 = t.test(fs.data1$FieldAbsEffect,mu=0)
+df_stats$mean[1] = mean(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"])
+df_stats$mean[2] = mean(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"])
+df_stats$mean[3] = mean(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"])
+df_stats$mean[4] = mean(fs.data1$FieldAbsEffect_weighted)
+df_stats$median[1] = median(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"])
+df_stats$median[2] = median(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"])
+df_stats$median[3] = median(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"])
+df_stats$median[4] = median(fs.data1$FieldAbsEffect_weighted)
+df_stats$mode[1] = mode(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"])
+df_stats$mode[2] = mode(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"])
+df_stats$mode[3] = mode(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"])
+df_stats$mode[4] = mode(fs.data1$FieldAbsEffect_weighted)
+df_stats$se[1] = se(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"])
+df_stats$se[2] = se(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"])
+df_stats$se[3] = se(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"])
+df_stats$se[4] = se(fs.data1$FieldAbsEffect_weighted)
+df_stats$sd[1] = sd(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"])
+df_stats$sd[2] = sd(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"])
+df_stats$sd[3] = sd(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"])
+df_stats$sd[4] = sd(fs.data1$FieldAbsEffect_weighted)
+t1 = t.test(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"],mu=0)
+t2 = t.test(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"],mu=0)
+t3 = t.test(fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"],mu=0)
+t4 = t.test(fs.data1$FieldAbsEffect_weighted,mu=0)
 df_stats$pvalue[1] = t1$p.value
 df_stats$pvalue[2] = t2$p.value
 df_stats$pvalue[3] = t3$p.value
@@ -516,15 +521,25 @@ df_stats$ci95_upper[1] = t1$conf.int[2]
 df_stats$ci95_upper[2] = t2$conf.int[2]
 df_stats$ci95_upper[3] = t3$conf.int[2]
 df_stats$ci95_upper[4] = t4$conf.int[2]
-dd = fs.data1$FieldAbsEffect[fs.data1$Region=="Asia"]
+dd = fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Asia"]
+length(dd)
 df_stats$PercDataUnderZero[1] = (length(which(dd<0))/length(dd))*100
-dd = fs.data1$FieldAbsEffect[fs.data1$Region=="Africa"]
+dd = fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Africa"]
+length(dd)
 df_stats$PercDataUnderZero[2] = (length(which(dd<0))/length(dd))*100
-dd = fs.data1$FieldAbsEffect[fs.data1$Region=="Americas"]
+dd = fs.data1$FieldAbsEffect_weighted[fs.data1$Region=="Americas"]
+length(dd)
 df_stats$PercDataUnderZero[3] = (length(which(dd<0))/length(dd))*100
-dd = fs.data1$FieldAbsEffect
+dd = fs.data1$FieldAbsEffect_weighted
+length(dd)
 df_stats$PercDataUnderZero[4] = (length(which(dd<0))/length(dd))*100
 
 file_out = glue::glue('out_df_{format(Sys.time(), "%Y_%m_%d_%H%M%S")}.csv')
 write.csv(df_stats,file_out)
+
+dd_all = fs.data1
+mean(dd_all$FieldAbsEffect_weighted)
+dd_asia = fs.data1[fs.data1$Region=="Asia",]
+dd_africa = fs.data1[fs.data1$Region=="Africa",]
+dd_americas = fs.data1[fs.data1$Region=="Americas",]
 

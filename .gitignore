@@ -3,3 +3,5 @@
 .Rhistory
 *.csv
 *.pdf
+backups/Code_ForestCoverLossMatchingApproach.R
+backups/prep_map_data.R

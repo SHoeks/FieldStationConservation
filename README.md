@@ -2,6 +2,8 @@
 
 This repository contains the codes for: "Tropical field stations yield high conservation return on investment"
 
+The paper can be found here: https://conbio.onlinelibrary.wiley.com/doi/10.1111/conl.13007
+
 ## Code_RedListData.R
 This code extract the list of tetrapod species whose range overlaps with the field stations sites and summarizes the list by number of species and proportion of threatened species per group in the regions. 
 

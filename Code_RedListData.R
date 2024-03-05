@@ -1,5 +1,5 @@
 #### Field stations yield high return-on-investment for conservation ####
-#Author: XXXXX
+#Author: Luca Santini
 
 #This code extract the list of tetrapod species whose range overlaps with the field stations sites
 #and summarizes the list by number of species and proportion of threatened species per group in the regions

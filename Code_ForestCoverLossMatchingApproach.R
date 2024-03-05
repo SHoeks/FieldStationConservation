@@ -1,6 +1,6 @@
 #### Field stations yield high return-on-investment for conservation ####
 #-------- authors 
-# XXXXX
+# Selwyn Hoeks
 
 #-------- description 
 # this code was used to evaluate whether field stations prevent forest cover loss
